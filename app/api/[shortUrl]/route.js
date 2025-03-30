@@ -23,9 +23,7 @@ export async function GET(req) {
     const errorPageURL = new URL("/errorPage", req.url);
     return Response.redirect(errorPageURL, 302);
   }
-
   try {
-    // Consulta para obtener la URL original asociada al shortUrl
     const result = await pool.query(
       `SELECT * FROM urls WHERE short_url = $1`,
       [shortUrl]
@@ -41,24 +39,21 @@ export async function GET(req) {
     const now = new Date();
     const expiryDate = new Date(urlData.expiry_date);
 
-    // Verifica si la URL ha expirado
     if (now > expiryDate) {
       console.info(`Short URL expired: ${shortUrl}`);
       const errorPageURL = new URL("/errorPage", req.url);
       return Response.redirect(errorPageURL, 302);
     }
 
-    // Incrementa el contador de clics
     await pool.query(
       `UPDATE urls SET clicks = clicks + 1 WHERE short_url = $1`,
       [shortUrl]
     );
 
-    // Redirige a la URL original
     return Response.redirect(urlData.original_url, 302);
   } catch (error) {
     console.error("Error handling request:", error);
     const errorPageURL = new URL("/errorPage", req.url);
     return Response.redirect(errorPageURL, 302);
-  }
+  } 
 }

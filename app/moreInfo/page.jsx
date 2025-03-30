@@ -1,3 +1,13 @@
+/**
+ * MoreInfoPage Component
+ *
+ * This component provides a detailed guide on how to use the link shortener app.
+ * It explains the steps to shorten a link, customize it, and share it.
+ * The page is styled with Tailwind CSS for a clean and user-friendly design.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered informational page.
+ */
 export default function MoreInfoPage() {
     return (
         <div className="h-220 bg-gradient-to-b from-gray-100 via-gray-200 to-gray-300 text-gray-800 p-8">

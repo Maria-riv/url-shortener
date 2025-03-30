@@ -2,13 +2,33 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
+/**
+ * Navbar Component
+ *
+ * This component renders the navigation bar for the application.
+ * It includes:
+ * - A clickable logo that redirects to the home page.
+ * - A title for the application.
+ * - A "More Info" button that navigates to the informational page.
+ *
+ * The navigation bar is styled with Tailwind CSS for a clean and responsive design.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered navigation bar.
+ */
 export const Navbar = () => {
     const router = useRouter();
 
+    /**
+     * Navigates the user to the "More Info" page.
+     */
     const handleMoreInfo = () => {
         router.push('/moreInfo'); 
     };
 
+    /**
+     * Navigates the user to the home page when the logo is clicked.
+     */
     const handleLogoClick = () => {
         router.push('/'); 
     };

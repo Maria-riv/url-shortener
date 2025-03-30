@@ -2,9 +2,22 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
+/**
+ * ErrorPage Component
+ *
+ * This component displays an error page when a user tries to access an expired or invalid URL.
+ * It provides a message explaining the issue and a button to navigate back to the home page.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered error page.
+ */
 const ErrorPage = () => {
     const router = useRouter();
 
+    /**
+     * Handles the "Back to Home" button click.
+     * Navigates the user back to the home page.
+     */
     const handleGoBack = () => {
         router.push('/');
     };

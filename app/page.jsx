@@ -2,6 +2,20 @@
 import React, { useState } from "react";
 import StatsModal from "@/components/StatsModal";
 
+/**
+ * Home Component
+ *
+ * This is the main page of the URL Shortener app. It allows users to:
+ * - Enter a long URL to shorten.
+ * - Optionally provide a custom short URL.
+ * - Generate a shortened URL and display it.
+ * - View statistics for the generated URL (e.g., number of clicks).
+ *
+ * The page is styled with Tailwind CSS for a clean and responsive design.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered home page.
+ */
 export default function Home() {
   const [url, setUrl] = useState("");
   const [customShortUrl, setCustomShortUrl] = useState("");
@@ -12,6 +26,12 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [linkData, setLinkData] = useState(null);
 
+  /**
+   * Validates if the input is a valid URL.
+   *
+   * @param {string} input - The URL to validate.
+   * @returns {boolean} True if the URL is valid, false otherwise.
+   */
   const isValidUrl = (input) => {
     try {
       new URL(input);
@@ -21,6 +41,10 @@ export default function Home() {
     }
   };
 
+  /**
+   * Handles the "Shorten" button click.
+   * Sends a POST request to the `/api/generate` endpoint to create a short URL.
+   */
   const handleShorten = async () => {
     if (!url.trim()) {
       setError("⚠️ Please enter a URL.");
@@ -60,6 +84,10 @@ export default function Home() {
     }
   };
 
+  /**
+   * Fetches statistics for the generated short URL.
+   * Sends a GET request to the `/api/getUrl` endpoint to retrieve link data.
+   */
   const fetchLinkData = async () => {
     if (!generatedId) {
       setError("No link has been generated yet.");
@@ -140,7 +168,8 @@ export default function Home() {
                 </a>
               </div>
             )}
-          </div>{generatedId && (
+          </div>
+          {generatedId && (
             <button
               onClick={fetchLinkData}
               className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-white"

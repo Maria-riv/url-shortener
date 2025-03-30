@@ -26,7 +26,6 @@ export async function GET(req) {
   const pool = await initDB();
 
   try {
-    // Consulta para obtener los detalles de la URL por ID
     const result = await pool.query(
       `SELECT id, original_url, short_url, expiry_date, clicks FROM urls WHERE id = $1`,
       [id]

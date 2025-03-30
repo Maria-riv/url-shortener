@@ -11,20 +11,17 @@ import { initDB } from "../../../connect";
  * @returns {Response} A JSON response with the cleanup result or an error message.
  */
 export async function DELETE() {
-  const pool = await initDB(); // Obtén el pool de conexiones
+  const pool = await initDB(); 
   const now = new Date().toISOString();
 
   try {
-    // Eliminar URLs expiradas
     const deleteResult = await pool.query(
       `DELETE FROM urls WHERE expiry_date < $1 RETURNING id`,
       [now]
     );
 
-    // Número de registros eliminados
     const deletedCount = deleteResult.rowCount;
 
-    // Respuesta exitosa
     return new Response(
       JSON.stringify({
         message: `${deletedCount} expired URLs deleted.`,
@@ -34,10 +31,8 @@ export async function DELETE() {
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    // Registro del error
     console.error("Error during cleanup:", error);
 
-    // Respuesta de error
     return new Response(
       JSON.stringify({
         error: "Failed to delete expired URLs.",

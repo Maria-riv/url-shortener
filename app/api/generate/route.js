@@ -1,6 +1,17 @@
 import { initDB } from "../../../connect";
 import crypto from "crypto";
-
+/**
+ * Handles POST requests to generate or update a short URL.
+ *
+ * This function checks if the provided URL already exists in the database.
+ * If it exists, it either returns the existing short URL or updates it with a custom short URL.
+ * If the URL does not exist, it generates a new short URL and stores it in the database.
+ *
+ * @async
+ * @function POST
+ * @param {Request} req - The incoming HTTP request object.
+ * @returns {Promise<Response>} A JSON response with the short URL or an error message.
+ */
 export async function POST(req) {
   const { url, customShortUrl } = await req.json();
 
@@ -13,7 +24,6 @@ export async function POST(req) {
 
   const pool = await initDB();
 
-  // Verifica si la URL original ya existe en la base de datos
   const existingEntryResult = await pool.query(
     `SELECT id, short_url FROM urls WHERE original_url = $1`,
     [url]
@@ -29,7 +39,6 @@ export async function POST(req) {
       );
     }
 
-    // Verifica si el customShortUrl ya está en uso
     const customUrlExistsResult = await pool.query(
       `SELECT id FROM urls WHERE short_url = $1`,
       [customShortUrl]
@@ -42,7 +51,6 @@ export async function POST(req) {
       );
     }
 
-    // Actualiza la URL corta existente con el customShortUrl
     await pool.query(
       `UPDATE urls SET short_url = $1 WHERE id = $2`,
       [customShortUrl, existingEntry.id]
@@ -54,12 +62,10 @@ export async function POST(req) {
     );
   }
 
-  // Genera una nueva URL corta
   const shortUrl = customShortUrl || crypto.randomBytes(4).toString("hex");
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + 3);
 
-  // Inserta la nueva URL en la base de datos
   const insertResult = await pool.query(
     `INSERT INTO urls (original_url, short_url, expiry_date) VALUES ($1, $2, $3) RETURNING id`,
     [url, shortUrl, expiryDate.toISOString()]
