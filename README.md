@@ -102,24 +102,29 @@ Set up the `.env` file based on `.env-example` and define the database credentia
 
 ### 🚀 Running Locally
 
+After installing the dependencies with `npm install`, ensure you build the project by running:
+
+```bash
+npm run build
+```
+
+Alternatively, you can generate the Prisma client and build the project with:
+
+```bash
+npm run prisma:generate && npm run build
+```
+
 To start the server in development mode:
 
 ```bash
 npm run dev
-
-```
-
-To build the project for production:
-
-```bash
-npm run build
-
 ```
 
 To start the server in production:
 
 ```bash
 npm start
+```
 
 ```
 
