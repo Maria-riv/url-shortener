@@ -85,7 +85,6 @@ export async function POST(req) {
   }
 
   try {
-    // Verificar si el customShortUrl ya está en uso
     if (customShortUrl) {
       const customExists = await urlService.getUrlByShortCode(customShortUrl);
       if (customExists) {
@@ -96,17 +95,14 @@ export async function POST(req) {
       }
     }
 
-    // Generar un shortUrl único si no se proporciona uno personalizado
     let shortUrl = customShortUrl || crypto.randomBytes(4).toString("hex");
 
-    // Verificar si el shortUrl generado ya existe
     let shortUrlExists = await urlService.getUrlByShortCode(shortUrl);
     while (shortUrlExists) {
       shortUrl = crypto.randomBytes(4).toString("hex");
       shortUrlExists = await urlService.getUrlByShortCode(shortUrl);
     }
 
-    // Crear la nueva URL
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 3);
 
