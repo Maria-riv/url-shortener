@@ -230,6 +230,16 @@ Below are the API endpoints and their functionalities:
 | `/api/getUrl` | GET | Retrieve details of a short URL by its ID. |
 | `/api/[shortUrl]` | GET | Redirect to the original URL from a short link. |
 
+# 🚀💻 Technological Decisions and Technical Considerations
+
+The choice of technologies used in this project was based on my personal experience and the specific requirements of the system. Given the limited requirements, adopting an overly complex and unnecessary stack would have been irresponsible, considering that in a real-world environment, economic and infrastructure resources are often constrained.
+
+In this context, a simple solution using **Next.js** was proposed. The advantage of Next.js lies in its ability to manage both the frontend and a lightweight backend within the same framework, making it ideal for deployments in free and resource-limited environments. This allows for the construction of a compact and efficient full-stack application, avoiding the overhead of an overly broad technological ecosystem.
+
+Additionally, **Prisma** was chosen as the ORM because it facilitates database migration and management in an agile and secure manner. Prisma enables robust and scalable handling of requests while maintaining high performance and reducing complexity in data management.
+
+To organize the code and ensure its maintainability and scalability, a design pattern based on **Layered Architecture** was implemented. This approach, similar to the **Service Layer** pattern, clearly separates the business logic, database interaction, and application presentation. This separation simplifies optimization and code maintenance, ensuring that each component fulfills specific responsibilities without unnecessary coupling.
+
 ## 🚀 Deployment  
 
 This project has been deployed using **Vercel** for the application and **Tembo.io** for the database.  
@@ -265,16 +275,6 @@ To apply database migrations in production:
 ```bash
 npm run prisma:deploy
 ```  
-# 🚀💻 Technological Decisions and Technical Considerations
-
-The choice of technologies used in this project was based on my personal experience and the specific requirements of the system. Given the limited requirements, adopting an overly complex and unnecessary stack would have been irresponsible, considering that in a real-world environment, economic and infrastructure resources are often constrained.
-
-In this context, a simple solution using **Next.js** was proposed. The advantage of Next.js lies in its ability to manage both the frontend and a lightweight backend within the same framework, making it ideal for deployments in free and resource-limited environments. This allows for the construction of a compact and efficient full-stack application, avoiding the overhead of an overly broad technological ecosystem.
-
-Additionally, **Prisma** was chosen as the ORM because it facilitates database migration and management in an agile and secure manner. Prisma enables robust and scalable handling of requests while maintaining high performance and reducing complexity in data management.
-
-To organize the code and ensure its maintainability and scalability, a design pattern based on **Layered Architecture** was implemented. This approach, similar to the **Service Layer** pattern, clearly separates the business logic, database interaction, and application presentation. This separation simplifies optimization and code maintenance, ensuring that each component fulfills specific responsibilities without unnecessary coupling.
-
 ## 📚 Documentation and Support
 
 If you need help or want to contribute, you can:
