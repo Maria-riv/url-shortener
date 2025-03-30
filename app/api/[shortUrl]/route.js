@@ -13,15 +13,9 @@ import { initDB } from "../../../connect";
  * @param {Request} req - The incoming HTTP request object.
  * @returns {Promise<Response>} A response object that either redirects to the
  * original URL or an error page.
- *
- * @throws {Error} If there is an issue with the database query or other unexpected errors.
- *
- * @example
- * const response = await GET(request);
- * console.log(response.status); // 302 (redirect)
  */
 export async function GET(req) {
-  const db = await initDB();
+  const pool = await initDB();
   const shortUrl = req.nextUrl.pathname.split("/").pop();
 
   if (!shortUrl) {
@@ -31,26 +25,37 @@ export async function GET(req) {
   }
 
   try {
-    const result = await db.get(`SELECT * FROM urls WHERE short_url = ?`, [shortUrl]);
+    // Consulta para obtener la URL original asociada al shortUrl
+    const result = await pool.query(
+      `SELECT * FROM urls WHERE short_url = $1`,
+      [shortUrl]
+    );
 
-    if (!result) {
+    if (result.rows.length === 0) {
       console.warn(`Short URL not found: ${shortUrl}`);
       const errorPageURL = new URL("/errorPage", req.url);
       return Response.redirect(errorPageURL, 302);
     }
 
+    const urlData = result.rows[0];
     const now = new Date();
-    const expiryDate = new Date(result.expiry_date);
+    const expiryDate = new Date(urlData.expiry_date);
 
+    // Verifica si la URL ha expirado
     if (now > expiryDate) {
       console.info(`Short URL expired: ${shortUrl}`);
       const errorPageURL = new URL("/errorPage", req.url);
       return Response.redirect(errorPageURL, 302);
     }
 
-    await db.run(`UPDATE urls SET clicks = clicks + 1 WHERE short_url = ?`, [shortUrl]);
+    // Incrementa el contador de clics
+    await pool.query(
+      `UPDATE urls SET clicks = clicks + 1 WHERE short_url = $1`,
+      [shortUrl]
+    );
 
-    return Response.redirect(result.original_url, 302);
+    // Redirige a la URL original
+    return Response.redirect(urlData.original_url, 302);
   } catch (error) {
     console.error("Error handling request:", error);
     const errorPageURL = new URL("/errorPage", req.url);

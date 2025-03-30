@@ -11,12 +11,10 @@ import { initDB } from "../../../connect";
  * @function GET
  * @param {Request} req - The incoming HTTP request object.
  * @returns {Promise<Response>} A JSON response with the URL details or an error message.
- *
-
  */
 export async function GET(req) {
-  const { searchParams } = new URL(req.url); 
-  const id = searchParams.get("id"); 
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
 
   if (!id || isNaN(Number(id))) {
     return new Response(
@@ -25,27 +23,30 @@ export async function GET(req) {
     );
   }
 
-  const db = await initDB();
+  const pool = await initDB();
 
   try {
-    const result = await db.get(
-      `SELECT id, original_url, short_url, expiry_date, clicks FROM urls WHERE id = ?`,
+    // Consulta para obtener los detalles de la URL por ID
+    const result = await pool.query(
+      `SELECT id, original_url, short_url, expiry_date, clicks FROM urls WHERE id = $1`,
       [id]
     );
 
-    if (!result) {
+    if (result.rows.length === 0) {
       return new Response(
         JSON.stringify({ error: "URL not found." }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
 
+    const urlDetails = result.rows[0];
+
     const responsePayload = {
-      id: result.id,
-      originalUrl: result.original_url,
-      shortUrl: result.short_url,
-      expiryDate: result.expiry_date,
-      clicks: result.clicks,
+      id: urlDetails.id,
+      originalUrl: urlDetails.original_url,
+      shortUrl: urlDetails.short_url,
+      expiryDate: urlDetails.expiry_date,
+      clicks: urlDetails.clicks,
     };
 
     return new Response(
