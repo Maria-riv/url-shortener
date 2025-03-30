@@ -230,6 +230,41 @@ Below are the API endpoints and their functionalities:
 | `/api/getUrl` | GET | Retrieve details of a short URL by its ID. |
 | `/api/[shortUrl]` | GET | Redirect to the original URL from a short link. |
 
+## 🚀 Deployment  
+
+This project has been deployed using **Vercel** for the application and **Tembo.io** for the database.  
+
+### 🌐 Application Deployment (Vercel)  
+
+The frontend and backend API routes were deployed on **Vercel**. The necessary environment variables were configured in the **Settings > Environment Variables** section, including:  
+
+```env
+DATABASE_URL=postgresql://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB_NAME>?sslmode=verify-full
+```  
+
+The deployment process included:  
+
+1. Importing the GitHub repository into **Vercel**.  
+2. Setting up build commands:  
+   ```bash
+      prisma generate && prisma migrate deploy && next build
+   ```
+3. Deploying the application with Vercel’s automated build system.  
+
+### 🛢️ Database Deployment (Tembo.io)  
+
+The database is hosted on **Tembo.io**, a cloud-managed PostgreSQL service.  
+
+- A new **PostgreSQL instance** was created in Tembo Cloud.  
+- The **connection string** was added to the environment variables.  
+- SSL encryption (`sslmode=verify-full`) was enabled for a secure connection.  
+- The **root CA certificate** (`sslrootcert`) was used to authenticate the connection, ensuring the highest level of security.  
+
+To apply database migrations in production:  
+
+```bash
+npm run prisma:deploy
+```  
 # 🚀💻 Technological Decisions and Technical Considerations
 
 The choice of technologies used in this project was based on my personal experience and the specific requirements of the system. Given the limited requirements, adopting an overly complex and unnecessary stack would have been irresponsible, considering that in a real-world environment, economic and infrastructure resources are often constrained.
