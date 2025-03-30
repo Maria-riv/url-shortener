@@ -126,8 +126,6 @@ To start the server in production:
 npm start
 ```
 
-```
-
 ## 📜 Main Commands
 
 | Command | Description |
