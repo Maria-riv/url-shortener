@@ -1,80 +1,115 @@
-import { initDB } from "../../../connect";
+import { urlService } from "../../../lib/urlService";
 import crypto from "crypto";
+
 /**
- * Handles POST requests to generate or update a short URL.
- *
- * This function checks if the provided URL already exists in the database.
- * If it exists, it either returns the existing short URL or updates it with a custom short URL.
- * If the URL does not exist, it generates a new short URL and stores it in the database.
+ * Handles the POST request to generate a shortened URL.
  *
  * @async
  * @function POST
  * @param {Request} req - The incoming HTTP request object.
- * @returns {Promise<Response>} A JSON response with the short URL or an error message.
+ * @returns {Promise<Response>} A promise that resolves to an HTTP response object.
+ *
+ * @description
+ * This function processes a POST request to create a shortened URL. It accepts a JSON payload
+ * containing the following properties:
+ * - `url` (string): The original URL to be shortened. This field is required.
+ * - `customShortUrl` (string, optional): A custom short URL provided by the user.
+ *
+ * The function performs the following steps:
+ * 1. Validates the presence of the `url` field in the request body.
+ * 2. Checks if the URL already exists in the database:
+ *    - If it exists and no custom short URL is provided, the existing entry is returned.
+ *    - If a custom short URL is provided and it matches the existing entry, the existing entry is returned.
+ *    - If a custom short URL is provided but already in use, an error response is returned.
+ *    - Otherwise, the existing entry is updated with the custom short URL and returned.
+ * 3. If the URL does not exist, a new shortened URL is generated:
+ *    - A random short URL is created if no custom short URL is provided.
+ *    - The new entry is saved in the database with an expiry date set to 3 days from creation.
+ * 4. Handles potential errors, including unique constraint violations (e.g., duplicate custom short URLs).
+ *
+ * @throws {Response} Returns an HTTP response with appropriate status codes and error messages:
+ * - 400: If the `url` field is missing or the custom short URL is already in use.
+ * - 500: If an internal error occurs during URL creation.
+ *
+ * @example
+ * // Request payload
+ * {
+ *   "url": "https://example.com",
+ *   "customShortUrl": "example123"
+ * }
+ *
+ * // Successful response
+ * {
+ *   "message": "Shortened URL successfully created.",
+ *   "id": "12345",
+ *   "shortUrl": "example123"
+ * }
+ *
+ * // Error response (missing URL)
+ * {
+ *   "error": "The URL is required. Please provide a valid URL."
+ * }
  */
 export async function POST(req) {
   const { url, customShortUrl } = await req.json();
 
   if (!url) {
     return new Response(
-      JSON.stringify({ error: "URL is required." }),
+      JSON.stringify({ error: "The URL is required. Please provide a valid URL." }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  const pool = await initDB();
-
-  const existingEntryResult = await pool.query(
-    `SELECT id, short_url FROM urls WHERE original_url = $1`,
-    [url]
-  );
-
-  const existingEntry = existingEntryResult.rows[0];
+  let existingEntry = await urlService.getUrlByShortCode(url);
 
   if (existingEntry) {
     if (!customShortUrl || customShortUrl === existingEntry.short_url) {
+      return new Response(JSON.stringify(existingEntry), { status: 200 });
+    }
+
+    let customExists = await urlService.customShortUrlExists(customShortUrl);
+    if (customExists) {
       return new Response(
-        JSON.stringify({ id: existingEntry.id, shortUrl: existingEntry.short_url }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({ error: "The custom URL is already in use. Please choose another one." }),
+        { status: 400 }
       );
     }
 
-    const customUrlExistsResult = await pool.query(
-      `SELECT id FROM urls WHERE short_url = $1`,
-      [customShortUrl]
-    );
-
-    if (customUrlExistsResult.rows.length > 0) {
-      return new Response(
-        JSON.stringify({ error: "Custom short URL is already in use." }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    await pool.query(
-      `UPDATE urls SET short_url = $1 WHERE id = $2`,
-      [customShortUrl, existingEntry.id]
-    );
-
-    return new Response(
-      JSON.stringify({ id: existingEntry.id, shortUrl: customShortUrl }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    existingEntry = await urlService.updateShortUrl(existingEntry.id, customShortUrl);
+    return new Response(JSON.stringify(existingEntry), { status: 200 });
   }
 
   const shortUrl = customShortUrl || crypto.randomBytes(4).toString("hex");
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + 3);
 
-  const insertResult = await pool.query(
-    `INSERT INTO urls (original_url, short_url, expiry_date) VALUES ($1, $2, $3) RETURNING id`,
-    [url, shortUrl, expiryDate.toISOString()]
-  );
+  try {
+    const newEntry = await urlService.createShortUrl(url, shortUrl, expiryDate);
+    return new Response(
+      JSON.stringify({
+        message: "Shortened URL successfully created.",
+        id: newEntry.id,
+        shortUrl: newEntry.shortUrl,
+      }),
+      { status: 201, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error creating the URL:", error);
 
-  const newId = insertResult.rows[0].id;
+    if (error.code === "P2002" && error.meta && error.meta.target.includes("shortUrl")) {
+      return new Response(
+        JSON.stringify({
+          error: "The custom name is already in use. Please choose another name.",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-  return new Response(
-    JSON.stringify({ id: newId, shortUrl }),
-    { status: 201, headers: { "Content-Type": "application/json" } }
-  );
+    return new Response(
+      JSON.stringify({
+        error: "An internal error occurred while trying to create the URL. Please try again later.",
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }

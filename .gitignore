@@ -42,3 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .crt
+
+# Prisma
+/prisma/migrations
+/prisma/dev.db
